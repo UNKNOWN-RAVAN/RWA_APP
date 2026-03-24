@@ -119,3 +119,27 @@ export default async function handler(req, res) {
                     title, 
                     type: 'pdf', 
                     url: encryptUrl(pdf2), 
+                    subject: subject.subject_name, 
+                    topic: topic.topic_name 
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      batch_id: parseInt(batch_id),
+      batch_name: batch.batch_name,
+      total_content: allContent.length,
+      content: allContent
+    });
+
+  } catch (error) {
+    console.error('Admin user content error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
