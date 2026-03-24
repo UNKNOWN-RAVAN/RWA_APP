@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" name="viewport"/>
+<title>RWA Learning Platform</title>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
+<meta content="#000000" name="theme-color"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+        --bg-color: #000000;
+        --card-color: #121212;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --text-primary: #f0f0f0;
+        --text-secondary: #a0a0a0;
+        --gradient-start: #ff69b4;
+        --gradient-end: #0dcaf0;
+        --gradient: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        padding-top: 70px;
+    }
+
+    .navbar {
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .navbar-brand {
+        background: var(--gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .login-box, .admin-login-box {
+        background: var(--card-color);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 40px;
+        max-width: 450px;
+        margin: 50px auto;
+    }
+
+    .form-control, .form-select {
+        background: var(--bg-color);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        border-radius: 12px;
+        padding: 12px;
+    }
+
+    .form-control:focus {
+        background: var(--bg-color);
+        border-color: var(--gradient-end);
+        box-shadow: 0 0 10px rgba(13, 202, 240, 0.3);
+        color: var(--text-primary);
+    }
+
+    .btn-primary {
+        background: var(--gradient);
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        font-weight: 600;
+        color: #000;
+        width: 100%;
+        transition: transform 0.2s;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn-outline-info {
+        border-color: var(--gradient-end);
+        color: var(--gradient-end);
+    }
+
+    .btn-outline-info:hover {
+        background: var(--gradient);
+        border-color: transparent;
+        color: #000;
+    }
+
+    .card {
+        background: var(--card-color);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        border-color: var(--gradient-end);
+    }
+
+    .card-img-top {
+        height: 160px;
+        object-fit: cover;
+        background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+    }
+
+    .badge-batch {
+        background: var(--gradient);
+        color: #000;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+    }
+
+    .content-card {
+        background: var(--card-color);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+
+    .content-card:hover {
+        border-color: var(--gradient-end);
+    }
+
+    .content-thumbnail {
+        height: 120px;
+        background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+    }
+
+    .play-btn {
+        background: var(--gradient);
+        color: #000;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .modal-content {
+        background: var(--card-color);
+        border: 1px solid var(--border-color);
+    }
+
+    #videoPlayer {
+        position: relative;
+        width: 100%;
+        padding-bottom: 56.25%;
+        background: #000;
+    }
+
+    #videoPlayer iframe, #videoPlayer video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .skeleton {
+        background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 12px;
+    }
+
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    .toast-custom {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 250px;
+    }
+
+    @media (max-width: 768px) {
+        .container { padding: 15px; }
+        .login-box, .admin-login-box { margin: 20px; padding: 30px; }
+    }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">RWA Learning</a>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-info btn-sm" id="logoutBtn" style="display: none;" onclick="logout()">Logout</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container" id="appContainer">
+    <!-- User Login Section -->
+    <div id="userLoginSection">
+        <div class="login-box">
+            <h3 class="text-center mb-4">Welcome to RWA</h3>
+            <ul class="nav nav-tabs mb-3" id="loginTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="token-tab" data-bs-toggle="tab" data-bs-target="#token" type="button" role="tab">Token Login</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="mobile-tab" data-bs-toggle="tab" data-bs-target="#mobile" type="button" role="tab">Mobile Login</button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="token" role="tabpanel">
+                    <div class="mb-3">
+                        <label class="form-label">Select Platform</label>
+                        <select class="form-select" id="apiSelect">
+                            <option value="https://rozgarapinew.teachx.in">RWA</option>
+                            <option value="https://winnersinstituteapi.classx.co.in">Winners Institute</option>
+                            <option value="https://mgconceptapi.classx.co.in">Mg Concept</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">JWT Token</label>
+                        <textarea class="form-control" id="tokenInput" rows="3" placeholder="Paste your JWT token here"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="loginWithToken()">Login with Token</button>
+                </div>
+                <div class="tab-pane fade" id="mobile" role="tabpanel">
+                    <div class="mb-3">
+                        <label class="form-label">Select Platform</label>
+                        <select class="form-select" id="apiSelectMobile">
+                            <option value="https://rozgarapinew.teachx.in">RWA</option>
+                            <option value="https://winnersinstituteapi.classx.co.in">Winners Institute</option>
+                            <option value="https://mgconceptapi.classx.co.in">Mg Concept</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Mobile Number</label>
+                        <input type="text" class="form-control" id="mobileInput" placeholder="Enter mobile number">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="passwordInput" placeholder="Enter password">
+                    </div>
+                    <button class="btn btn-primary" onclick="loginWithMobile()">Login with Mobile</button>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <hr class="border-secondary">
+                <button class="btn btn-outline-info w-100" onclick="showAdminLogin()">Admin Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Section -->
+    <div id="adminLoginSection" style="display: none;">
+        <div class="admin-login-box">
+            <h3 class="text-center mb-4">Admin Login</h3>
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" id="adminUsername" placeholder="Enter username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="adminPassword" placeholder="Enter password">
+            </div>
+            <button class="btn btn-primary" onclick="adminLogin()">Login as Admin</button>
+            <button class="btn btn-outline-secondary mt-2 w-100" onclick="showUserLogin()">Back to User Login</button>
+        </div>
+    </div>
+
+    <!-- Batches Section -->
+    <div id="batchesSection" style="display: none;">
+        <h2 class="mb-4">Your Batches</h2>
+        <div class="row" id="batchesContainer"></div>
+    </div>
+
+    <!-- Subjects Section -->
+    <div id="subjectsSection" style="display: none;">
+        <button class="btn btn-outline-secondary mb-3" onclick="goBackToBatches()">← Back to Batches</button>
+        <h2 class="mb-4" id="batchName"></h2>
+        <div class="row" id="subjectsContainer"></div>
+    </div>
+
+    <!-- Topics Section -->
+    <div id="topicsSection" style="display: none;">
+        <button class="btn btn-outline-secondary mb-3" onclick="goBackToSubjects()">← Back to Subjects</button>
+        <h2 class="mb-4" id="subjectName"></h2>
+        <div class="row" id="topicsContainer"></div>
+    </div>
+
+    <!-- Content Section -->
+    <div id="contentSection" style="display: none;">
+        <button class="btn btn-outline-secondary mb-3" onclick="goBackToTopics()">← Back to Topics</button>
+        <h2 class="mb-4" id="topicName"></h2>
+        <div class="row" id="contentContainer"></div>
+    </div>
+</div>
+
+<!-- Video Modal -->
+<div class="modal fade" id="videoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoTitle">Video Player</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="videoPlayer"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PDF Modal -->
+<div class="modal fade" id="pdfModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdfTitle">PDF Viewer</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="height: 80vh;">
+                <iframe id="pdfFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let API_BASE = '';
+    let USER_TOKEN = '';
+    let USER_ID = '';
+    let CURRENT_BATCH = null;
+    let CURRENT_SUBJECT = null;
+    let CURRENT_TOPIC = null;
+
+    function showToast(message, isError = false) {
+        const toastHtml = `
+            <div class="toast-custom">
+                <div class="toast show" role="alert">
+                    <div class="toast-header ${isError ? 'bg-danger' : 'bg-success'} text-white">
+                        <strong class="me-auto">${isError ? 'Error' : 'Success'}</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', toastHtml);
+        setTimeout(() => {
+            const toast = document.querySelector('.toast-custom');
+            if (toast) toast.remove();
+        }, 3000);
+    }
+
+    function showLoading(containerId) {
+        document.getElementById(containerId).innerHTML = `
+            <div class="col-12">
+                <div class="skeleton" style="height: 200px; margin-bottom: 20px;"></div>
+                <div class="skeleton" style="height: 200px;"></div>
+            </div>
+        `;
+    }
+
+    async function loginWithToken() {
+        const api = document.getElementById('apiSelect').value;
+        const token = document.getElementById('tokenInput').value.trim();
+        
+        if (!token) {
+            showToast('Please enter token', true);
+            return;
+        }
+
+        try {
+            const userId = getUserIdFromToken(token);
+            if (!userId) throw new Error('Invalid token');
+            
+            USER_TOKEN = token;
+            USER_ID = userId;
+            API_BASE = api;
+            
+            localStorage.setItem('userToken', token);
+            localStorage.setItem('apiBase', api);
+            localStorage.setItem('userId', userId);
+            
+            await fetchBatches();
+        } catch (error) {
+            showToast('Login failed: ' + error.message, true);
+        }
+    }
+
+    async function loginWithMobile() {
+        const api = document.getElementById('apiSelectMobile').value;
+        const mobile = document.getElementById('mobileInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        
+        if (!mobile || !password) {
+            showToast('Please enter mobile and password', true);
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/login?credentials=${mobile}*${password}&api=${api}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                USER_TOKEN = data.token;
+                USER_ID = data.user_id;
+                API_BASE = api;
+                
+                localStorage.setItem('userToken', data.token);
+                localStorage.setItem('apiBase', api);
+                localStorage.setItem('userId', data.user_id);
+                
+                await fetchBatches();
+            } else {
+                throw new Error(data.error || 'Login failed');
+            }
+        } catch (error) {
+            showToast('Login failed: ' + error.message, true);
+        }
+    }
+
+    function getUserIdFromToken(token) {
+        try {
+            const payloadBase64 = token.split('.')[1];
+            const payloadJson = atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'));
+            const payload = JSON.parse(payloadJson);
+            return payload.id || payload.userId || payload.sub;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function fetchBatches() {
+        showLoading('batchesContainer');
+        
+        try {
+            const response = await fetch(`/api/batches?token=${USER_TOKEN}`);
+            const data = await response.json();
+            
+            if (data.success && data.batches) {
+                displayBatches(data.batches);
+                document.getElementById('userLoginSection').style.display = 'none';
+                document.getElementById('batchesSection').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'block';
+            } else {
+                throw new Error('No batches found');
+            }
+        } catch (error) {
+            showToast('Error fetching batches: ' + error.message, true);
+        }
+    }
+
+    function displayBatches(batches) {
+        const container = document.getElementById('batchesContainer');
+        container.innerHTML = '';
+        
+        batches.forEach(batch => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+                <div class="card" onclick="fetchSubjects(${batch.batch_id}, '${batch.batch_name.replace(/'/g, "\\'")}')">
+                    <img src="${batch.thumbnail || 'https://via.placeholder.com/300x160/121212/ffffff?text=No+Image'}" class="card-img-top" alt="${batch.batch_name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${batch.batch_name}</h5>
+                        <p class="card-text text-secondary">Batch ID: ${batch.batch_id}</p>
+                        <span class="badge-batch">${batch.start_date || 'Ongoing'}</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    }
+
+    async function fetchSubjects(batchId, batchName) {
+        CURRENT_BATCH = { id: batchId, name: batchName };
+        showLoading('subjectsContainer');
+        
+        try {
+            const response = await fetch(`/api/topics?token=${USER_TOKEN}&batch_id=${batchId}`);
+            const data = await response.json();
+            
+            if (data.success && data.subjects) {
+                displaySubjects(data.subjects, batchName);
+                document.getElementById('batchesSection').style.display = 'none';
+                document.getElementById('subjectsSection').style.display = 'block';
+                document.getElementById('batchName').innerText = batchName;
+            } else {
+                throw new Error('No subjects found');
+            }
+        } catch (error) {
+            showToast('Error fetching subjects: ' + error.message, true);
+        }
+    }
+
+    function displaySubjects(subjects, batchName) {
+        const container = document.getElementById('subjectsContainer');
+        container.innerHTML = '';
+        
+        subjects.forEach(subject => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+                <div class="card" onclick="fetchTopics(${subject.subject_id}, '${subject.subject_name.replace(/'/g, "\\'")}')">
+                    <div class="card-body text-center">
+                        <i class="bi bi-book-fill" style="font-size: 3rem; color: #0dcaf0;"></i>
+                        <h5 class="card-title mt-3">${subject.subject_name}</h5>
+                        <p class="card-text text-secondary">${subject.description || 'Click to view topics'}</p>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    }
+
+    async function fetchTopics(subjectId, subjectName) {
+        CURRENT_SUBJECT = { id: subjectId, name: subjectName };
+        showLoading('topicsContainer');
+        
+        try {
+            const response = await fetch(`/api/topics?token=${USER_TOKEN}&batch_id=${CURRENT_BATCH.id}&subject_id=${subjectId}`);
+            const data = await response.json();
+            
+            if (data.success && data.topics) {
+                displayTopics(data.topics, subjectName);
+                document.getElementById('subjectsSection').style.display = 'none';
+                document.getElementById('topicsSection').style.display = 'block';
+                document.getElementById('subjectName').innerText = subjectName;
+            } else {
+                throw new Error('No topics found');
+            }
+        } catch (error) {
+            showToast('Error fetching topics: ' + error.message, true);
+        }
+    }
+
+    function displayTopics(topics, subjectName) {
+        const container = document.getElementById('topicsContainer');
+        container.innerHTML = '';
+        
+        topics.forEach(topic => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+                <div class="card" onclick="fetchContent(${topic.topic_id}, '${topic.topic_name.replace(/'/g, "\\'")}')">
+                    <div class="card-body text-center">
+                        <i class="bi bi-folder-fill" style="font-size: 3rem; color: #ff69b4;"></i>
+                        <h5 class="card-title mt-3">${topic.topic_name}</h5>
+                        <p class="card-text text-secondary">${topic.description || 'Click to view content'}</p>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    }
+
+    async function fetchContent(topicId, topicName) {
+        CURRENT_TOPIC = { id: topicId, name: topicName };
+        showLoading('contentContainer');
+        
+        try {
+            const response = await fetch(`/api/content?token=${USER_TOKEN}&batch_id=${CURRENT_BATCH.id}&subject_id=${CURRENT_SUBJECT.id}&topic_id=${topicId}`);
+            const data = await response.json();
+            
+            if (data.success && data.content) {
+                displayContent(data.content, topicName);
+                document.getElementById('topicsSection').style.display = 'none';
+                document.getElementById('contentSection').style.display = 'block';
+                document.getElementById('topicName').innerText = topicName;
+            } else {
+                throw new Error('No content found');
+            }
+        } catch (error) {
+            showToast('Error fetching content: ' + error.message, true);
+        }
+    }
+
+    function displayContent(content, topicName) {
+        const container = document.getElementById('contentContainer');
+        container.innerHTML = '';
+        
+        content.forEach(item => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            
+            if (item.type === 'video') {
+                col.innerHTML = `
+                    <div class="content-card" onclick="playVideo('${item.url}', '${item.title.replace(/'/g, "\\'")}')">
+                        <div class="content-thumbnail">
+                            <i class="bi bi-play-circle-fill" style="color: #0dcaf0;"></i>
+                        </div>
+                        <div class="p-3">
+                            <h6 class="mb-0">${item.title}</h6>
+                            <small class="text-secondary">Video Lecture</small>
+                        </div>
+                    </div>
+                `;
+            } else {
+                col.innerHTML = `
+                    <div class="content-card" onclick="openPDF('${item.url}', '${item.title.replace(/'/g, "\\'")}')">
+                        <div class="content-thumbnail">
+                            <i class="bi bi-file-earmark-pdf-fill" style="color: #ff4444;"></i>
+                        </div>
+                        <div class="p-3">
+                            <h6 class="mb-0">${item.title}</h6>
+                            <small class="text-secondary">PDF Document</small>
+                        </div>
+                    </div>
+                `;
+            }
+            container.appendChild(col);
+        });
+    }
+
+    function playVideo(url, title) {
+        const videoPlayer = document.getElementById('videoPlayer');
+        document.getElementById('videoTitle').innerText = title;
+        videoPlayer.innerHTML = '';
+        
+        if (url.includes('youtu.be') || url.includes('youtube')) {
+            const videoId = url.split('/').pop().split('?')[0];
+            videoPlayer.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
+        } else {
+            videoPlayer.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`;
+        }
+        
+        new bootstrap.Modal(document.getElementById('videoModal')).show();
+    }
+
+    function openPDF(url, title) {
+        document.getElementById('pdfTitle').innerText = title;
+        document.getElementById('pdfFrame').src = url;
+        new bootstrap.Modal(document.getElementById('pdfModal')).show();
+    }
+
+    function goBackToBatches() {
+        document.getElementById('subjectsSection').style.display = 'none';
+        document.getElementById('batchesSection').style.display = 'block';
+    }
+
+    function goBackToSubjects() {
+        document.getElementById('topicsSection').style.display = 'none';
+        document.getElementById('subjectsSection').style.display = 'block';
+    }
+
+    function goBackToTopics() {
+        document.getElementById('contentSection').style.display = 'none';
+        document.getElementById('topicsSection').style.display = 'block';
+    }
+
+    function logout() {
+        localStorage.clear();
+        USER_TOKEN = '';
+        USER_ID = '';
+        location.reload();
+    }
+
+    function showAdminLogin() {
+        document.getElementById('userLoginSection').style.display = 'none';
+        document.getElementById('adminLoginSection').style.display = 'block';
+    }
+
+    function showUserLogin() {
+        document.getElementById('adminLoginSection').style.display = 'none';
+        document.getElementById('userLoginSection').style.display = 'block';
+    }
+
+    async function adminLogin() {
+        const username = document.getElementById('adminUsername').value;
+        const password = document.getElementById('adminPassword').value;
+        
+        if (!username || !password) {
+            showToast('Please enter username and password', true);
+            return;
+        }
+        
+        try {
+            const response = await fetch(`/api/admin/auth?username=${username}&password=${password}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                localStorage.setItem('adminAuth', JSON.stringify({ username, password }));
+                window.location.href = '/admin.html';
+            } else {
+                throw new Error(data.error || 'Invalid credentials');
+            }
+        } catch (error) {
+            showToast('Admin login failed: ' + error.message, true);
+        }
+    }
+
+    // Check for saved session
+    if (localStorage.getItem('userToken')) {
+        USER_TOKEN = localStorage.getItem('userToken');
+        USER_ID = localStorage.getItem('userId');
+        API_BASE = localStorage.getItem('apiBase');
+        fetchBatches();
+    }
+</script>
+</body>
+</html>
