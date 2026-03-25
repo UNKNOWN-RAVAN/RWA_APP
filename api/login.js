@@ -57,7 +57,6 @@ export default async function handler(req, res) {
 
     const apiBase = api || 'https://rozgarapinew.teachx.in';
 
-    // Authenticate with original API
     let authResult;
     try {
       const loginUrl = `${apiBase}/post/userLogin`;

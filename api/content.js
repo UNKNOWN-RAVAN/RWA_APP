@@ -53,7 +53,6 @@ export default async function handler(req, res) {
               if (videoData.data.download_link) {
                 const link = decryptContent(videoData.data.download_link);
                 if (link && !link.includes('.pdf')) {
-                  // Encrypt the URL before sending to frontend
                   content.push({ title, type: 'video', url: encryptUrl(link) });
                 }
               }
