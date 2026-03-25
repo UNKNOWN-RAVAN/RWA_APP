@@ -1,7 +1,7 @@
 {
   "name": "rwa-learning-platform",
   "version": "1.0.0",
-  "description": "RWA Learning Platform with User and Admin Panels",
+  "description": "RWA Learning Platform API",
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
