@@ -6,6 +6,7 @@
     <title>RWA Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         :root {
             --bg-color: #000000;
@@ -235,6 +236,31 @@
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // ===== CRYPTO/DECRYPTION FUNCTIONS =====
+        const ENCRYPTION_KEY = '638udh3829162018';
+        const ENCRYPTION_IV = 'fedcba9876543210';
+        
+        function restoreBase64(urlSafe) {
+            return urlSafe.replace(/-/g, '+').replace(/_/g, '/').replace(/~/g, '=');
+        }
+        
+        function decryptUrl(encrypted) {
+            try {
+                if (!encrypted) return "";
+                const restored = restoreBase64(encrypted);
+                const decrypted = CryptoJS.AES.decrypt(restored, CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY), {
+                    iv: CryptoJS.enc.Utf8.parse(ENCRYPTION_IV),
+                    mode: CryptoJS.mode.CBC,
+                    padding: CryptoJS.pad.Pkcs7
+                });
+                return decrypted.toString(CryptoJS.enc.Utf8);
+            } catch (e) {
+                console.error('Decryption error:', e);
+                return encrypted;
+            }
+        }
+        // ======================================
+        
         let ADMIN_CRED = null;
         
         function showToast(message, isError = false) {
@@ -427,6 +453,7 @@
             container.innerHTML = '';
             
             content.forEach(item => {
+                const decryptedUrl = decryptUrl(item.url);
                 const col = document.createElement('div');
                 col.className = 'col-md-6 mb-3';
                 col.innerHTML = `
@@ -438,7 +465,7 @@
                                 <br>
                                 <small class="text-secondary">${item.subject} / ${item.topic}</small>
                             </div>
-                            <button class="btn btn-sm btn-primary" onclick="viewContent('${item.url}', '${item.title.replace(/'/g, "\\'")}', '${item.type}')">
+                            <button class="btn btn-sm btn-primary" onclick="viewContent('${decryptedUrl}', '${item.title.replace(/'/g, "\\'")}', '${item.type}')">
                                 <i class="bi bi-${item.type === 'video' ? 'play-fill' : 'file-earmark-text-fill'}"></i> View
                             </button>
                         </div>
@@ -454,6 +481,11 @@
         }
         
         function viewContent(url, title, type) {
+            if (!url) {
+                showToast('Content URL not available', true);
+                return;
+            }
+            
             if (type === 'video') {
                 const videoPlayer = document.getElementById('videoPlayer');
                 document.getElementById('videoTitle').innerText = title;
