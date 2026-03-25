@@ -1,10 +1,21 @@
 {
-  "name": "rwa-full-app",
+  "name": "rwa-learning-platform",
   "version": "1.0.0",
+  "description": "RWA Learning Platform with User and Admin Panels",
   "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
   "dependencies": {
     "mongodb": "^5.8.0",
     "bcryptjs": "^2.4.3",
     "crypto-js": "^4.1.1"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }
