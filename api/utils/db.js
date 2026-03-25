@@ -1,28 +1,45 @@
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 
-let client;
-let db;
+// Global cached connection for serverless environment
+let cachedClient = null;
+let cachedDb = null;
 
 /**
- * Connect to MongoDB database
+ * Connect to MongoDB database with caching for serverless
  * Uses MONGODB_URI from environment variables
  */
 export async function connectToDatabase() {
-  if (db) return db;
+  // Return cached connection if available
+  if (cachedClient && cachedDb) {
+    return cachedDb;
+  }
   
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI environment variable is not set');
     }
     
-    client = new MongoClient(process.env.MONGODB_URI);
-    await client.connect();
-    db = client.db('rwa_learning');
+    // Connection options optimized for serverless
+    const options = {
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      maxIdleTimeMS: 10000,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+    
+    cachedClient = new MongoClient(process.env.MONGODB_URI, options);
+    await cachedClient.connect();
+    cachedDb = cachedClient.db('rwa_learning');
+    
     console.log('✅ Connected to MongoDB successfully');
-    return db;
+    return cachedDb;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
+    // Reset cache on error
+    cachedClient = null;
+    cachedDb = null;
     throw error;
   }
 }
@@ -296,10 +313,10 @@ export async function getAllMergedBatches() {
  * @returns {Promise<void>}
  */
 export async function closeDatabaseConnection() {
-  if (client) {
-    await client.close();
-    db = null;
-    client = null;
+  if (cachedClient) {
+    await cachedClient.close();
+    cachedClient = null;
+    cachedDb = null;
     console.log('🔌 MongoDB connection closed');
   }
 }
