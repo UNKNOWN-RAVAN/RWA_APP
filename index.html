@@ -351,6 +351,34 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // ===== CRYPTO/DECRYPTION FUNCTIONS =====
+    const ENCRYPTION_KEY = '638udh3829162018';
+    const ENCRYPTION_IV = 'fedcba9876543210';
+    
+    // Restore Base64 from URL-safe format
+    function restoreBase64(urlSafe) {
+        return urlSafe.replace(/-/g, '+').replace(/_/g, '/').replace(/~/g, '=');
+    }
+    
+    // Decrypt URL function - YEH SABSE IMPORTANT HAI
+    function decryptUrl(encrypted) {
+        try {
+            if (!encrypted) return "";
+            // Restore from URL-safe format
+            const restored = restoreBase64(encrypted);
+            const decrypted = CryptoJS.AES.decrypt(restored, CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY), {
+                iv: CryptoJS.enc.Utf8.parse(ENCRYPTION_IV),
+                mode: CryptoJS.mode.CBC,
+                padding: CryptoJS.pad.Pkcs7
+            });
+            return decrypted.toString(CryptoJS.enc.Utf8);
+        } catch (e) {
+            console.error('Decryption error:', e);
+            return encrypted; // Return original if decryption fails
+        }
+    }
+    // ======================================
+
     let API_BASE = '';
     let USER_TOKEN = '';
     let USER_ID = '';
@@ -608,9 +636,12 @@
             const col = document.createElement('div');
             col.className = 'col-md-4 mb-4';
             
+            // Decrypt URL before passing to player
+            const decryptedUrl = decryptUrl(item.url);
+            
             if (item.type === 'video') {
                 col.innerHTML = `
-                    <div class="content-card" onclick="playVideo('${item.url}', '${item.title.replace(/'/g, "\\'")}')">
+                    <div class="content-card" onclick="playVideo('${decryptedUrl}', '${item.title.replace(/'/g, "\\'")}')">
                         <div class="content-thumbnail">
                             <i class="bi bi-play-circle-fill" style="color: #0dcaf0;"></i>
                         </div>
@@ -622,7 +653,7 @@
                 `;
             } else {
                 col.innerHTML = `
-                    <div class="content-card" onclick="openPDF('${item.url}', '${item.title.replace(/'/g, "\\'")}')">
+                    <div class="content-card" onclick="openPDF('${decryptedUrl}', '${item.title.replace(/'/g, "\\'")}')">
                         <div class="content-thumbnail">
                             <i class="bi bi-file-earmark-pdf-fill" style="color: #ff4444;"></i>
                         </div>
@@ -638,6 +669,11 @@
     }
 
     function playVideo(url, title) {
+        if (!url) {
+            showToast('Video URL not available', true);
+            return;
+        }
+        
         const videoPlayer = document.getElementById('videoPlayer');
         document.getElementById('videoTitle').innerText = title;
         videoPlayer.innerHTML = '';
@@ -653,6 +689,11 @@
     }
 
     function openPDF(url, title) {
+        if (!url) {
+            showToast('PDF URL not available', true);
+            return;
+        }
+        
         document.getElementById('pdfTitle').innerText = title;
         document.getElementById('pdfFrame').src = url;
         new bootstrap.Modal(document.getElementById('pdfModal')).show();
